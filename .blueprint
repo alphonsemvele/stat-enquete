@@ -1,0 +1,26 @@
+created:
+    - database/factories/UserFactory.php
+    - database/factories/FormFactory.php
+    - database/factories/QuestionFactory.php
+    - database/factories/OptionFactory.php
+    - database/factories/ResponseFactory.php
+    - database/factories/AnswerFactory.php
+    - database/migrations/2025_09_02_110558_create_users_table.php
+    - database/migrations/2025_09_02_110559_create_forms_table.php
+    - database/migrations/2025_09_02_110600_create_questions_table.php
+    - database/migrations/2025_09_02_110601_create_options_table.php
+    - database/migrations/2025_09_02_110602_create_responses_table.php
+    - database/migrations/2025_09_02_110603_create_answers_table.php
+    - app/Models/User.php
+    - app/Models/Form.php
+    - app/Models/Question.php
+    - app/Models/Option.php
+    - app/Models/Response.php
+    - app/Models/Answer.php
+models:
+    User: { name: 'string:100', email: 'string:120 unique', password: 'string:255', timestamps: timestamps, relationships: { hasMany: 'Form, Response' } }
+    Form: { title: 'string:200', description: 'text nullable', created_by: 'foreign:users.id', status: 'string:50 default:draft', is_public: 'boolean default:false', timestamps: timestamps, relationships: { belongsTo: 'User:created_by', hasMany: 'Question, Response' } }
+    Question: { form_id: 'foreign:forms.id', type: 'string:50', content: text, is_required: 'boolean default:false', order: integer, timestamps: timestamps, relationships: { belongsTo: Form, hasMany: 'Option, Answer' } }
+    Option: { question_id: 'foreign:questions.id', value: 'string:255', timestamps: timestamps, relationships: { belongsTo: Question } }
+    Response: { form_id: 'foreign:forms.id', user_id: 'foreign:users.id nullable', submitted_at: datetime, timestamps: timestamps, relationships: { belongsTo: 'Form, User', hasMany: Answer } }
+    Answer: { response_id: 'foreign:responses.id', question_id: 'foreign:questions.id', value: 'text nullable', timestamps: timestamps, relationships: { belongsTo: 'Response, Question' } }
