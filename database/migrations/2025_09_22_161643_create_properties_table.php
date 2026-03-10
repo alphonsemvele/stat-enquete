@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('name');
             $table->foreignId('type_id')->constrained();
             $table->enum('status', ['pending', 'success','failed'])->default('pending');
-            $table->enum('category', ['static', 'dynamic','multiple','unique'])->default('pending');
+            $table->enum('category', ['static', 'dynamic','multiple','unique'])->default('static');
             $table->timestamps();
         });
     }
