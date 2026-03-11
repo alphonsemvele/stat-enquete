@@ -4,56 +4,104 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Form extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
+        'user_id',
         'title',
         'description',
-        'created_by',
-        'status',
-        'is_public',
-        'created_by_id',
+        'color',
+        'reference',
+        'cover_image',
+        'is_published',
+        'accepts_responses',
+        'closes_at',
+        'confirmation_message',
+        'redirect_url',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'id' => 'integer',
-            'created_by' => 'integer',
-            'is_public' => 'boolean',
-            'created_by_id' => 'integer',
-        ];
-    }
+    protected $casts = [
+        'is_published'      => 'boolean',
+        'accepts_responses' => 'boolean',
+        'closes_at'         => 'datetime',
+    ];
 
-    public function createdBy(): BelongsTo
+    // =========================================================================
+    // RELATIONS
+    // =========================================================================
+
+    /**
+     * Propriétaire du formulaire.
+     */
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-
-
+    /**
+     * Toutes les questions du formulaire, triées par ordre.
+     */
     public function questions(): HasMany
     {
-        return $this->hasMany(Question::class);
+        return $this->hasMany(FormQuestion::class)->orderBy('order');
     }
 
+    /**
+     * Toutes les soumissions reçues pour ce formulaire.
+     */
     public function responses(): HasMany
     {
-        return $this->hasMany(Response::class);
+        return $this->hasMany(FormResponse::class);
+    }
+
+    // =========================================================================
+    // SCOPES
+    // =========================================================================
+
+    /**
+     * Formulaires publiés uniquement.
+     */
+    public function scopePublished($query)
+    {
+        return $query->where('is_published', true);
+    }
+
+    /**
+     * Formulaires encore ouverts aux réponses.
+     */
+    public function scopeOpen($query)
+    {
+        return $query->where('accepts_responses', true)
+                     ->where(function ($q) {
+                         $q->whereNull('closes_at')
+                           ->orWhere('closes_at', '>', now());
+                     });
+    }
+
+    // =========================================================================
+    // HELPERS
+    // =========================================================================
+
+    /**
+     * Vérifie si le formulaire accepte encore des réponses.
+     */
+    public function isOpen(): bool
+    {
+        return $this->accepts_responses
+            && (is_null($this->closes_at) || $this->closes_at->isFuture());
+    }
+
+    /**
+     * Nombre total de soumissions.
+     */
+    public function responsesCount(): int
+    {
+        return $this->responses()->count();
     }
 }

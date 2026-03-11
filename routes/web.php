@@ -3,8 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProfileController;
 
-
-Route::view('/', 'welcome')->name('vitrine');
+Route::redirect('/', '/dashboard')->name('vitrine');
+// Route::view('/', 'welcome')->name('vitrine');
     Route::get('/logout', [ProfileController::class, 'logout'])->name('logout');
 
 
