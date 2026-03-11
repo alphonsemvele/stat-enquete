@@ -34,7 +34,7 @@ new class extends Component {
     }
 };
 ?>
-<x-layouts.app title="Aperçu — {{ $form?->title }}">
+<x-layouts.app title="Aperçu du formulaire">
     @volt
     <div class="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800">
 
@@ -95,7 +95,7 @@ new class extends Component {
         </div>
 
         <!-- ══ Corps ══ -->
-        <div class="max-w-2xl mx-auto px-4 py-10">
+        <div class="max-w-4xl mx-auto px-6 py-10">
 
             @if(count($questions) === 0)
                 <div class="text-center py-20">

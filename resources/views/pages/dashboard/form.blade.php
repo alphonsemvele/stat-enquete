@@ -177,6 +177,18 @@ new class extends Component {
     {
         $this->editingTitle = false;
         $this->formTitle = trim($this->formTitle) ?: 'Nouveau formulaire';
+
+        // Persiste immédiatement le titre si le formulaire existe déjà en BD
+        if ($this->formId) {
+            try {
+                $form = Form::findOrFail($this->formId);
+                $this->authorize('update', $form);
+                $form->title = $this->formTitle;
+                $form->save();
+            } catch (\Throwable) {
+                // silencieux — sera sauvegardé au prochain saveForm()
+            }
+        }
     }
 
     // ── Sauvegarde DB ───────────────────────────────────────────────────────
@@ -273,19 +285,19 @@ new class extends Component {
                 <div class="flex items-center gap-3 flex-1 min-w-0">
                     @if($editingTitle)
                         <input
-                            wire:model.live="formTitle"
+                            x-data
+                            x-init="$el.focus(); $el.select()"
+                            wire:model="formTitle"
                             wire:blur="stopEditTitle"
                             wire:keydown.enter="stopEditTitle"
+                            wire:keydown.escape="stopEditTitle"
                             type="text"
-                            autofocus
-                            class="text-2xl font-bold text-gray-900 dark:text-white bg-transparent border-0
-                                   border-b-2 border-blue-400 outline-none focus:ring-0 flex-1 min-w-0 pb-0.5">
+                            class="text-2xl font-bold text-gray-900 dark:text-white bg-transparent border-0 border-b-2 border-blue-400 outline-none focus:ring-0 flex-1 min-w-0 pb-0.5">
                     @else
                         <h1
                             wire:click="startEditTitle"
                             title="Cliquer pour modifier le titre"
-                            class="text-2xl font-bold text-gray-900 dark:text-white cursor-text truncate
-                                   hover:text-blue-600 dark:hover:text-blue-400 transition-colors group flex items-center gap-2">
+                            class="text-2xl font-bold text-gray-900 dark:text-white cursor-text truncate hover:text-blue-600 dark:hover:text-blue-400 transition-colors group flex items-center gap-2">
                             {{ $formTitle }}
                             <svg class="w-4 h-4 opacity-0 group-hover:opacity-40 transition-opacity shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536M9 11l6.586-6.586a2 2 0 112.828 2.828L11.828 13.828A2 2 0 0111 14H9v-2a2 2 0 01.586-1.414z"/>
